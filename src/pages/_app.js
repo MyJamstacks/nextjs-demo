@@ -1,7 +1,6 @@
 import "@/styles/style.css";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { TaskProvider } from "@/context/taskContext";
 import AddTask from "@/components/AddTask";
 
 function MyApp({ Component, pageProps }) {
@@ -9,13 +8,11 @@ function MyApp({ Component, pageProps }) {
 
   const isActive = (path) => {
     if (path === "/") return pathname === "/";
-    if (path === "/active") return query.filter === "active";
-    if (path === "/completed") return query.filter === "completed";
-    return false;
+    return pathname === "/[filter]" && query.filter === path.slice(1);
   };
 
   return (
-    <TaskProvider initialTasks={pageProps.tasks}>
+    <>
       <header id="header">
         <span id="bar">
           Next.js Demo – Images by <a href="https://www.icons8.com">Icons8</a>
@@ -46,7 +43,7 @@ function MyApp({ Component, pageProps }) {
         <AddTask />
       </header>
       <Component {...pageProps} />
-    </TaskProvider>
+    </>
   );
 }
 

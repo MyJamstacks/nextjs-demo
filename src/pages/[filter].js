@@ -1,54 +1,35 @@
-import TaskCard from "@/components/TaskCard";
-import { useTasks } from "@/context/taskContext";
+import useSWR from "swr";
 import { useRouter } from "next/router";
+import TaskCard from "@/components/TaskCard";
 
-export async function getStaticPaths() {
-  return {
-    paths: [
-      { params: { filter: "active" } },
-      { params: { filter: "completed" } },
-    ],
-    fallback: false,
-  };
-}
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
-export async function getStaticProps({ params }) {
-  const res = await fetch("http://localhost:3001/tasks");
-  const tasks = (await res.json()).reverse();
-
-  let filtered = tasks;
-  if (params.filter === "active") {
-    filtered = tasks.filter((task) => !task.complete);
-  } else if (params.filter === "completed") {
-    filtered = tasks.filter((task) => task.complete);
-  }
-
-  return {
-    props: {
-      tasks: filtered,
-    },
-  };
-}
+const getApiUrl = () => {
+  return typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
+};
 
 export default function FilteredTasks() {
-  const { tasks } = useTasks();
   const { query } = useRouter();
+  const apiUrl = getApiUrl();
+  const { data: allTasks = [] } = useSWR(apiUrl, fetcher);
 
-  let filteredTasks = tasks;
-  if (query.filter === "active") {
-    filteredTasks = tasks.filter((t) => !t.complete);
-  } else if (query.filter === "completed") {
-    filteredTasks = tasks.filter((t) => t.complete);
-  }
+  const tasks = [...allTasks].reverse();
+
+  const filteredTasks =
+    query.filter === "active"
+      ? tasks.filter((t) => !t.complete)
+      : query.filter === "completed"
+      ? tasks.filter((t) => t.complete)
+      : tasks;
 
   return (
     <main>
       <div className="task-list" id="task-list">
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map((task) => <TaskCard key={task.id} task={task} />)
-        ) : (
-          <p>No tasks yet</p>
-        )}
+        {filteredTasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
       </div>
     </main>
   );

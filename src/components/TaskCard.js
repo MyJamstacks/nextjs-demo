@@ -1,30 +1,33 @@
 import { useState } from "react";
-import { useTasks } from "@/context/taskContext";
+import { mutate } from "swr";
 
 export default function TaskCard({ task }) {
-  const { setTasks } = useTasks();
   const [complete, setComplete] = useState(task.complete);
 
+  const apiUrl =
+    typeof window === "undefined"
+      ? process.env.API_URL
+      : process.env.NEXT_PUBLIC_API_URL;
+
   const toggleComplete = async (e) => {
-    setComplete(e.target.checked);
-    await fetch(`http://localhost:3001/tasks/${task.id}`, {
+    const updated = e.target.checked;
+    setComplete(updated);
+
+    await fetch(`${apiUrl}/${task.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ complete: e.target.checked }),
+      body: JSON.stringify({ complete: updated }),
     });
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === task.id ? { ...t, complete: e.target.checked } : t
-      )
-    );
+
+    mutate(apiUrl);
   };
 
   const deleteTask = async () => {
-    const res = await fetch(`http://localhost:3001/tasks/${task.id}`, {
+    const res = await fetch(`${apiUrl}/${task.id}`, {
       method: "DELETE",
     });
     if (res.ok) {
-      setTasks((prev) => prev.filter((t) => t.id !== task.id));
+      mutate(apiUrl);
     }
   };
 

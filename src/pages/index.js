@@ -1,27 +1,25 @@
+import useSWR from "swr";
 import TaskCard from "@/components/TaskCard";
-import { useTasks } from "@/context/taskContext";
 
-export async function getStaticProps() {
-  const res = await fetch("http://localhost:3001/tasks");
-  const tasks = (await res.json()).reverse();
+const getApiUrl = () =>
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
-  return {
-    props: {
-      tasks,
-    },
-  };
-}
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  const { tasks } = useTasks();
+  const apiUrl = getApiUrl();
+  const { data: allTasks = [] } = useSWR(apiUrl, fetcher);
+
+  const tasks = [...allTasks].reverse();
+
   return (
     <main>
       <div className="task-list" id="task-list">
-        {tasks.length > 0 ? (
-          tasks.map((task) => <TaskCard key={task.id} task={task} />)
-        ) : (
-          <p>No tasks yet</p>
-        )}
+        {tasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
       </div>
     </main>
   );

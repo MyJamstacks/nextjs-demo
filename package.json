@@ -3,13 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "playwright test tests/lighthouse.spec.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@playwright/test": "^1.52.0",
+    "@thecollege/playwright-lighthouse-flow": "^1.1.7",
+    "lighthouse": "^12.6.0",
     "next": "15.3.1",
+    "playwright": "^1.52.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "swr": "^2.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21"
   }
 }

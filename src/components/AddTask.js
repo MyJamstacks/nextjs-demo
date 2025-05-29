@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useTasks } from "@/context/taskContext";
+import { mutate } from "swr";
 
 export default function AddTask() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("general");
   const [priority, setPriority] = useState("none");
-  const { setTasks } = useTasks();
+
+  const apiUrl =
+    typeof window === "undefined"
+      ? process.env.API_URL
+      : process.env.NEXT_PUBLIC_API_URL;
 
   const submitTask = async (e) => {
     e.preventDefault();
@@ -19,7 +23,7 @@ export default function AddTask() {
       complete: false,
     };
 
-    const res = await fetch("http://localhost:3001/tasks", {
+    const res = await fetch(`${apiUrl}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -28,9 +32,8 @@ export default function AddTask() {
     });
 
     if (res.ok) {
-      const addedTask = await res.json();
-      setTasks((prevTasks) => [addedTask, ...prevTasks]);
       setTitle("");
+      mutate(apiUrl);
     }
   };
 
