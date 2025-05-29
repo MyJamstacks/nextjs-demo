@@ -1,35 +1,60 @@
 import useSWR from "swr";
-import { useRouter } from "next/router";
 import TaskCard from "@/components/TaskCard";
+
+const apiUrl =
+  typeof window === "undefined"
+    ? process.env.API_URL
+    : process.env.NEXT_PUBLIC_API_URL;
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
-const getApiUrl = () => {
-  return typeof window === "undefined"
-    ? process.env.API_URL
-    : process.env.NEXT_PUBLIC_API_URL;
-};
+export async function getStaticPaths() {
+  return {
+    paths: [
+      { params: { filter: "active" } },
+      { params: { filter: "completed" } },
+    ],
+    fallback: false,
+  };
+}
 
-export default function FilteredTasks() {
-  const { query } = useRouter();
-  const apiUrl = getApiUrl();
-  const { data: allTasks = [] } = useSWR(apiUrl, fetcher);
+export async function getStaticProps({ params }) {
+  const res = await fetch(apiUrl);
+  const allTasks = await res.json();
+
+  const filtered =
+    params.filter === "active"
+      ? allTasks.filter((task) => !task.complete)
+      : allTasks.filter((task) => task.complete);
+
+  return {
+    props: {
+      fallbackTasks: filtered,
+      filter: params.filter,
+    },
+  };
+}
+
+export default function FilteredTasks({ fallbackTasks, filter }) {
+  const { data: allTasks = [] } = useSWR(apiUrl, fetcher, {
+    fallbackData: fallbackTasks,
+  });
 
   const tasks = [...allTasks].reverse();
 
-  const filteredTasks =
-    query.filter === "active"
-      ? tasks.filter((t) => !t.complete)
-      : query.filter === "completed"
-      ? tasks.filter((t) => t.complete)
-      : tasks;
+  const filtered =
+    filter === "active"
+      ? tasks.filter((task) => !task.complete)
+      : tasks.filter((task) => task.complete);
 
   return (
     <main>
       <div className="task-list" id="task-list">
-        {filteredTasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
+        {filtered.length > 0 ? (
+          filtered.map((task) => <TaskCard key={task.id} task={task} />)
+        ) : (
+          <p>No tasks found.</p>
+        )}
       </div>
     </main>
   );
