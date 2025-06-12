@@ -31,11 +31,9 @@ export default function Home({ fallbackTasks }) {
   return (
     <main>
       <div className="task-list" id="task-list">
-        {tasks.length > 0 ? (
-          tasks.map((task) => <TaskCard key={task.id} task={task} />)
-        ) : (
-          <p>No tasks yet</p>
-        )}
+        {tasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
       </div>
     </main>
   );

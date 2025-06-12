@@ -50,11 +50,9 @@ export default function FilteredTasks({ fallbackTasks, filter }) {
   return (
     <main>
       <div className="task-list" id="task-list">
-        {filtered.length > 0 ? (
-          filtered.map((task) => <TaskCard key={task.id} task={task} />)
-        ) : (
-          <p>No tasks found.</p>
-        )}
+        {filtered.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
       </div>
     </main>
   );
